@@ -15,13 +15,13 @@ const patients = {
     },
     allergies: [{
       name: 'Penicillin',
-      detail: 'Sever Medication Allergy',
+      detail: 'Severe Medication Allergy',
     }, {
       name: 'Fish',
       detail: 'Mild Food Intolerance',
     }],
     problems: [{
-      name: 'Heterophyasis',
+      name: 'Heterophyiasis',
     }, {
       name: 'Anemia NEC',
     }, {
@@ -494,7 +494,8 @@ const patients = {
       name: 'Respiratory Rate',
       detail: '13',
     }, {
-      name: 'Electrolyte Panel: Creatinine: 0.8-1.3 mg/dL',
+      name: 'Electrolyte Panel',
+      detail: 'Creatinine: 0.8-1.3 mg/dL',
     }],
     myNotes: [{
       name: 'My Last Note - Yesterday',

@@ -1,469 +1,327 @@
 /* eslint-disable import/no-extraneous-dependencies, import/no-webpack-loader-syntax, import/first, import/no-unresolved, import/extensions  */
 import React from 'react';
-import { MemoryRouter, Link, withRouter } from 'react-router-dom';
-import { injectIntl, intlShape } from 'terra-base';
-import Avatar from 'terra-avatar';
-import ContentContainer from 'terra-content-container';
-import Button from 'terra-button';
-import Input from 'terra-form-input';
+import PropTypes from 'prop-types';
+import { MemoryRouter, withRouter, Redirect, matchPath, Switch, Route } from 'react-router-dom';
+import Image from 'terra-image';
+import Application, { DisclosureManager } from 'terra-application';
+import IconSearch from 'terra-icon/lib/icon/IconSearch';
+import IconPill from 'terra-icon/lib/icon/IconPill';
+import IconVisualization from 'terra-icon/lib/icon/IconVisualization';
+import IconLightbulb from 'terra-icon/lib/icon/IconLightbulb';
+import IconCalculator from 'terra-icon/lib/icon/IconCalculator';
+import IconTrophy from 'terra-icon/lib/icon/IconTrophy';
+import IconProjects from 'terra-icon/lib/icon/IconProjects';
+import IconSpinner from 'terra-icon/lib/icon/IconSpinner';
 
-import ApplicationLayout, { RoutingMenu, Utils } from 'terra-framework/packages/terra-application-layout/lib/ApplicationLayout';
-import { ManagedRoutingProvider } from 'terra-framework/packages/terra-application-layout/lib/ManagedRouting';
-import ContentPlaceholder from 'terra-framework/packages/terra-application-layout/lib/ContentPlaceholder';
-import { presentNotificationDialog } from 'terra-framework/packages/terra-application-layout/lib/StatelessNotificationDialog';
+import ApplicationNavigation from 'terra-application-navigation';
+import ContentComponent from './ContentComponent';
+import DisclosureComponent from './DisclosureComponent';
+import profileImage from './henry.jpg';
+import heroImage from './hero.jpg';
+import heroCloseupImage from './heroCloseup.jpg';
 
-import { PatientProvider } from './PatientProvider';
-import ChiefComplaintComponent from './ChiefComplaintComponent';
-import ListDetailComponent from './ListDetailComponent';
-import DemographicsRoutingMenu from './DemographicsRoutingMenu';
-import MessageCenterComponent from './MessageCenterComponent';
-
-const TestExtensions = () => (
-  <Button text="Extensions" />
-);
-
-const blankPlaceholder = (
-  <div
-    style={{
-      height: '100%',
-      width: '100%',
-      backgroundColor: 'grey',
-      boxShadow: 'inset 0 0 5px black',
-    }}
-  />
-);
-
-class InputHeaderBase extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      path: props.location.pathname,
-    };
-  }
-
-  render() {
-    return (
-      <React.Fragment>
-        <Input
-          value={this.state.path}
-          onChange={(event) => {
-            this.setState({
-              path: event.target.value,
-            });
-          }}
-        />
-        <Button
-          onClick={() => {
-            this.props.history.push(this.state.path);
-          }}
-          text="Go"
-        />
-      </React.Fragment>
-    );
-  }
-}
-
-const InputHeader = withRouter(InputHeaderBase);
-
-/**
- * The routingConfig API matches that of the NavigationLayout. Routing specifications for the
- * menu and content regions are supported; the header region is not configurable.
- */
-const routingConfig = {
-  menu: {
-    '/patient_list': {
-      path: '/patient_list',
-      component: {
-        default: {
-          componentClass: RoutingMenu,
-          props: {
-            title: 'Patient List',
-            menuItems: [{
-              text: 'Adams, Ricardo - DOB: 12/21/1948',
-              path: '/patient_list/6778266/chart',
-              hasSubMenu: true,
-            }, {
-              text: 'Birch, Dena - DOB: 5/01/1945',
-              path: '/patient_list/28032901/chart',
-              hasSubMenu: true,
-            }, {
-              text: 'Derosier, Shauna - DOB: 7/24/1929',
-              path: '/patient_list/57742980/chart',
-              hasSubMenu: true,
-            }, {
-              text: 'Fisk, Chou - DOB: 4/13/1956',
-              path: '/patient_list/14600575/chart',
-              hasSubMenu: true,
-            }],
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart': {
-      path: '/patient_list/:patient_id/chart',
-      component: {
-        default: {
-          componentClass: DemographicsRoutingMenu,
-          props: {
-            title: 'Patient Chart',
-            menuItems: [{
-              text: 'Review',
-              path: '/patient_list/:patient_id/chart/review',
-              hasSubMenu: true,
-            }, {
-              text: 'Orders',
-              path: '/patient_list/:patient_id/chart/orders',
-            }, {
-              text: 'Documents',
-              path: '/patient_list/:patient_id/chart/documents',
-              hasSubMenu: true,
-            }],
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart/review': {
-      path: '/patient_list/:patient_id/chart/review',
-      component: {
-        default: {
-          componentClass: DemographicsRoutingMenu,
-          props: {
-            title: 'Review',
-            menuItems: [{
-              text: 'Chief Complaint',
-              path: '/patient_list/:patient_id/chart/review/chief_complaint',
-            }, {
-              text: 'Allergies',
-              path: '/patient_list/:patient_id/chart/review/allergies',
-            }, {
-              text: 'Problems',
-              path: '/patient_list/:patient_id/chart/review/problems',
-            }, {
-              text: 'Labs',
-              path: '/patient_list/:patient_id/chart/review/labs',
-            }],
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart/documents': {
-      path: '/patient_list/:patient_id/chart/documents',
-      component: {
-        default: {
-          componentClass: DemographicsRoutingMenu,
-          props: {
-            title: 'Documents',
-            menuItems: [{
-              text: 'My Notes',
-              path: '/patient_list/:patient_id/chart/documents/my_notes',
-            }, {
-              text: 'Physician Notes',
-              path: '/patient_list/:patient_id/chart/documents/physician_notes',
-            }, {
-              text: 'Nurse Notes',
-              path: '/patient_list/:patient_id/chart/documents/nurse_notes',
-            }],
-          },
-        },
-      },
-    },
-  },
-  content: {
-    '/patient_list': {
-      path: '/patient_list',
-      component: {
-        default: {
-          componentClass: ContentPlaceholder,
-          props: {
-            placeholderContent: blankPlaceholder,
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart': {
-      path: '/patient_list/:patient_id/chart',
-      component: {
-        default: {
-          componentClass: ContentPlaceholder,
-          props: {
-            placeholderContent: blankPlaceholder,
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart/review': {
-      path: '/patient_list/:patient_id/chart/review',
-      component: {
-        default: {
-          componentClass: ContentPlaceholder,
-          props: {
-            autoselectPath: '/patient_list/:patient_id/chart/review/chief_complaint',
-            placeholderContent: blankPlaceholder,
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart/orders': {
-      path: '/patient_list/:patient_id/chart/orders',
-      component: {
-        default: {
-          componentClass: ListDetailComponent,
-          props: {
-            title: 'Orders',
-            dataKey: 'orders',
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart/documents': {
-      path: '/patient_list/:patient_id/chart/documents',
-      component: {
-        default: {
-          componentClass: ContentPlaceholder,
-          props: {
-            autoselectPath: '/patient_list/:patient_id/chart/documents/my_notes',
-            placeholderContent: blankPlaceholder,
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart/review/chief_complaint': {
-      path: '/patient_list/:patient_id/chart/review/chief_complaint',
-      component: {
-        default: {
-          componentClass: ChiefComplaintComponent,
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart/review/problems': {
-      path: '/patient_list/:patient_id/chart/review/problems',
-      component: {
-        default: {
-          componentClass: ListDetailComponent,
-          props: {
-            title: 'Problems',
-            dataKey: 'problems',
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart/review/allergies': {
-      path: '/patient_list/:patient_id/chart/review/allergies',
-      component: {
-        default: {
-          componentClass: ListDetailComponent,
-          props: {
-            title: 'Allergies',
-            dataKey: 'allergies',
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart/review/labs': {
-      path: '/patient_list/:patient_id/chart/review/labs',
-      component: {
-        default: {
-          componentClass: ListDetailComponent,
-          props: {
-            title: 'Labs',
-            dataKey: 'labs',
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart/documents/my_notes': {
-      path: '/patient_list/:patient_id/chart/documents/my_notes',
-      component: {
-        default: {
-          componentClass: ListDetailComponent,
-          props: {
-            title: 'My Notes',
-            dataKey: 'myNotes',
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart/documents/physician_notes': {
-      path: '/patient_list/:patient_id/chart/documents/physician_notes',
-      component: {
-        default: {
-          componentClass: ListDetailComponent,
-          props: {
-            title: 'Physician Notes',
-            dataKey: 'physicianNotes',
-          },
-        },
-      },
-    },
-    '/patient_list/:patient_id/chart/documents/nurse_notes': {
-      path: '/patient_list/:patient_id/chart/documents/nurse_notes',
-      component: {
-        default: {
-          componentClass: ListDetailComponent,
-          props: {
-            title: 'Nurse Notes',
-            dataKey: 'nurseNotes',
-          },
-        },
-      },
-    },
-    '/message_center': {
-      path: '/message_center',
-      component: {
-        default: {
-          componentClass: MessageCenterComponent,
-          props: {
-            title: 'Message Center',
-          },
-        },
-      },
-    },
-  },
-};
-
-/**
- * The navigationItems will be used to present the ApplicationLayout's navigation controls. The paths provided here must be present in
- * the routingConfig. If no navigation controls are desired, these items can be omitted.
- *
- * With standard rendering, the items will be presented as tabs within the ApplicationLayout's header.
- * With compact rendering, the items will be presented within the layout's menu region within a ApplicationLayout-managed menu.
- */
 const navigationItems = [{
-  path: '/patient_list',
-  text: 'Patient List',
+  key: '/page_1',
+  text: 'Page 1',
+  notificationCount: 1000,
+  hasNotifications: true,
 }, {
-  path: '/message_center',
-  text: 'Message Center',
+  key: '/page_2',
+  text: 'Page 2',
+  hasNotifications: true,
+}, {
+  key: '/page_3',
+  text: 'Page 3Page 3Page 3Page 3Page 3Page 3Page 3Page 3Page 3Page 3',
+  notificationCount: 62,
+  hasNotifications: true,
+}, {
+  key: '/page_4',
+  text: 'Page 4',
+}, {
+  key: '/page_5',
+  text: 'Page 5',
+  notificationCount: 5,
+  hasNotifications: true,
+}, {
+  key: '/page_6',
+  text: 'Page 6',
+}, {
+  key: '/page_7',
+  text: 'Page 7Page 7Page 7',
 }];
 
-/**
- * The indexPath will be given to the NavigationLayout to set up the appropriate redirects. If users attempt to navigate to a path unsupported
- * by the routingConfig, they will be redirected to this route. This path should therefore be present in the routingConfig.
- */
-const indexPath = '/food';
+const navigationItems2 = [{
+  key: '/page_1',
+  text: 'Page 1',
+  notificationCount: 1000,
+  hasNotifications: true,
+}, {
+  key: '/page_2',
+  text: 'Page 2',
+  hasNotifications: true,
+}, {
+  key: '/page_3',
+  text: 'Page 3Page 3Page 3Page 3Page 3Page 3Page 3Page 3Page 3Page 3',
+  notificationCount: 65,
+  hasNotifications: true,
+}, {
+  key: '/page_4',
+  text: 'Page 4',
+}, {
+  key: '/page_5',
+  text: 'Page 5',
+  notificationCount: 6,
+  hasNotifications: true,
+}, {
+  key: '/page_6',
+  text: 'Page 6',
+}, {
+  key: '/page_7',
+  text: 'Page 7Page 7Page 7',
+}];
 
-const userAvatar = (
-  <Avatar
-    variant="user"
-    alt="User, Test"
-    ariaLabel="User, Test"
-    key="user_avatar"
-  />
-);
-
-const userData = {
-  name: 'Username',
-  photo: userAvatar,
+const userConfig = {
+  name: 'Test User',
+  detail: 'Super Cool Person',
+  initials: 'TU',
+  imageSrc: profileImage,
 };
 
-/**
- * The data provided for nameConfig will be visible in the ApplicationLayout's header, as well
- * as in any menus at the tiny and small breakpoints.
- */
-const nameConfig = Object.freeze({
-  title: 'New Charting App',
-});
+const drawerMenuHero = <Image src={heroImage} variant="rounded" style={{ height: 'auto', width: '100%' }} />;
+const utilityMenuHero = <Image src={heroCloseupImage} variant="rounded" style={{ height: 'auto', width: '100%' }} />;
 
-class ApplicationLayoutTest extends React.Component {
-  constructor(props) {
-    super(props);
+const utilityItems = [{
+  key: 'Custom Utility 1',
+  text: 'Custom Utility 1',
+  icon: <IconProjects />,
+}, {
+  key: 'Custom Utility 2',
+  text: 'Custom Utility 2 - This is a long, long, long, long, long, long, long, long, long, long, long one',
+  icon: <IconSpinner />,
+}];
 
-    this.state = {
-      checkboxItemEnabled: false,
+class ApplicationNavigationTest extends React.Component {
+  static getActiveNavigationItem(location) {
+    for (let i = 0, numberOfNavigationItems = navigationItems.length; i < numberOfNavigationItems; i += 1) {
+      if (matchPath(location.pathname, navigationItems[i].key)) {
+        return navigationItems[i];
+      }
+    }
+
+    return undefined;
+  }
+
+  static getDerivedStateFromProps(newProps) {
+    return {
+      activeNavigationItem: ApplicationNavigationTest.getActiveNavigationItem(newProps.location),
     };
   }
 
-  componentDidMount() {
-    // if (!matchPath(this.props.location.pathname, '/food') || !matchPath(this.props.location.pathname, '/drink')) {
-    //   this.props.history.push('/food');
-    // }
+  constructor(props) {
+    super(props);
+
+    this.handleExtensionSelect = this.handleExtensionSelect.bind(this);
+    this.handleNavigationItemSelection = this.handleNavigationItemSelection.bind(this);
+    this.handleSettingsSelection = this.handleSettingsSelection.bind(this);
+    this.handleHelpSelection = this.handleHelpSelection.bind(this);
+    this.handleLogoutSelection = this.handleLogoutSelection.bind(this);
+    this.handleCustomUtilitySelection = this.handleCustomUtilitySelection.bind(this);
+
+    this.state = {
+      activeNavigationItemKey: undefined,
+      useItems2: false,
+    };
+  }
+
+  handleExtensionSelect(event, metaData) {
+    const { disclosureManager } = this.props;
+
+    disclosureManager.disclose({
+      preferredType: 'modal',
+      content: {
+        component: <DisclosureComponent text={metaData.key} />,
+      },
+    });
+  }
+
+  handleNavigationItemSelection(navigationItemKey) {
+    const { history } = this.props;
+    const { activeNavigationItemKey } = this.state;
+
+    if (activeNavigationItemKey !== navigationItemKey) {
+      history.push(navigationItemKey);
+    }
+  }
+
+  handleSettingsSelection() {
+    const { disclosureManager } = this.props;
+
+    disclosureManager.disclose({
+      preferredType: 'modal',
+      size: 'small',
+      content: {
+        key: 'settings-component',
+        component: <DisclosureComponent text="Settings" />,
+      },
+    });
+  }
+
+  handleHelpSelection() {
+    const { disclosureManager } = this.props;
+
+    disclosureManager.disclose({
+      preferredType: 'modal',
+      size: 'small',
+      content: {
+        key: 'help-component',
+        component: <DisclosureComponent text="Help" />,
+      },
+    });
+  }
+
+  handleLogoutSelection() {
+    const { disclosureManager } = this.props;
+
+    disclosureManager.disclose({
+      preferredType: 'modal',
+      size: 'small',
+      content: {
+        key: 'logout-component',
+        component: <DisclosureComponent text="Logout" />,
+      },
+    });
+  }
+
+  handleCustomUtilitySelection(utilityItemKey) {
+    const { disclosureManager } = this.props;
+
+    disclosureManager.disclose({
+      preferredType: 'modal',
+      size: 'small',
+      content: {
+        key: utilityItemKey,
+        component: <DisclosureComponent text={utilityItemKey} />,
+      },
+    });
   }
 
   render() {
-    const { intl } = this.props;
-    const { checkboxItemEnabled } = this.state;
+    const {
+      hideSettings,
+      hideHelp,
+      hideLogout,
+      hideNavigationItems,
+      hideUser,
+      hideHero,
+    } = this.props;
 
-    const customUtilityItems = [];
+    const { activeNavigationItem } = this.state;
 
-    /**
-     * The data provided for utilityConfig will be visible in the ApplicationLayout's header in the
-     * standard rendering mode and within the menus in the compact rendering mode.
-     *
-     * The ApplicationLayout's Utils export provides a helper function named getDefaultUtilityConfig that will
-     * generate the configuration for the standard set of utility options. If the standard configuration is not
-     * desirable, an entirely custom configuration can be used instead.
-     */
-    const utilityConfig = Object.freeze({
-      title: 'Username',
-      accessory: userAvatar,
-      menuItems: Utils.utilityHelpers.getDefaultUtilityItems(intl, userData, customUtilityItems),
-      initialSelectedKey: Utils.utilityHelpers.defaultKeys.MENU,
-      onChange: () => {},
-    });
+    if (!activeNavigationItem) {
+      return <Redirect to="/page_1" />;
+    }
+
+    const extensionConfig = {
+      largeCount: 4,
+      mediumCount: 3,
+      extensions: [
+        {
+          image: <IconSearch />,
+          metaData: { key: 'Search' },
+          onSelect: () => {
+            this.setState(prevState => ({
+              useItems2: !prevState.useItems2,
+            }));
+          },
+          text: 'Search',
+        },
+        {
+          image: <IconPill />,
+          metaData: { key: 'Pill' },
+          onSelect: this.handleExtensionSelect,
+          text: 'Pill',
+          notificationCount: 100,
+        },
+        {
+          image: <IconVisualization />,
+          text: 'Visualization',
+          type: 'popup',
+          content: <div>Im a Popup</div>,
+        },
+        {
+          image: <IconLightbulb />,
+          metaData: { key: 'Lightbulb' },
+          onSelect: this.handleExtensionSelect,
+          text: 'Lightbulb',
+        },
+        {
+          image: <IconCalculator />,
+          metaData: { key: 'Calculator' },
+          onSelect: this.handleExtensionSelect,
+          text: 'Calculator',
+        },
+        {
+          image: <IconTrophy />,
+          metaData: { key: 'Trophy' },
+          onSelect: this.handleExtensionSelect,
+          text: 'Trophy',
+          notificationCount: 5,
+        },
+      ],
+    };
+
+    let itemToUse = navigationItems;
+    if (this.state.useItems2) {
+      itemToUse = navigationItems2;
+    }
 
     return (
-      <div style={{ height: '100%' }}>
-        <MemoryRouter
-          initialEntries={['/patient_list']}
-          initialIndex={0}
-          getUserConfirmation={(message, callback) => {
-            presentNotificationDialog({
-              intl,
-              variant: 'warning',
-              title: 'Unsaved changes',
-              message,
-              primaryAction: {
-                text: 'Yarp',
-                onClick: () => {
-                  callback(true);
-                },
-              },
-              secondaryAction: {
-                text: 'Narp',
-                onClick: () => {
-                  callback(false);
-                },
-              },
-            });
-          }}
-        >
-          <ManagedRoutingProvider>
-            <ContentContainer
-              fill
-            >
-              <PatientProvider>
-                <ApplicationLayout
-                  nameConfig={nameConfig}
-                  utilityConfig={utilityConfig}
-                  routingConfig={routingConfig}
-                  navigationItems={navigationItems}
-                  // extensions={<TestExtensions />}
-                  indexPath={indexPath}
-                  routeNotFoundComponent={(
-                    <div style={{ height: '100%' }}>
-                      <h1>404 Page Not Found</h1>
-                      <Link to="/food">Go to Food</Link>
-                    </div>
-                  )}
-                />
-              </PatientProvider>
-            </ContentContainer>
-          </ManagedRoutingProvider>
-        </MemoryRouter>
-      </div>
+      <ApplicationNavigation
+        title="Test Application"
+        extensionConfig={extensionConfig}
+        userConfig={!hideUser ? userConfig : undefined}
+        drawerMenuHero={!hideHero ? drawerMenuHero : undefined}
+        utilityMenuHero={!hideHero ? utilityMenuHero : undefined}
+        navigationItems={!hideNavigationItems ? itemToUse : undefined}
+        activeNavigationItemKey={activeNavigationItem.key}
+        onSelectNavigationItem={!hideNavigationItems ? this.handleNavigationItemSelection : null}
+        onSelectSettings={!hideSettings ? this.handleSettingsSelection : undefined}
+        onSelectHelp={!hideHelp ? this.handleHelpSelection : undefined}
+        onSelectLogout={!hideLogout ? this.handleLogoutSelection : undefined}
+        utilityItems={utilityItems}
+        onSelectUtilityItem={this.handleCustomUtilitySelection}
+      >
+        <Switch>
+          <Route path="/page_1" render={() => <ContentComponent contentName="Page 1" numberOfParagraphs={1} />} />
+          <Route path="/page_2" render={() => <ContentComponent contentName="Page 2" numberOfParagraphs={2} />} />
+          <Route path="/page_3" render={() => <ContentComponent contentName="Page 3" numberOfParagraphs={3} />} />
+          <Route path="/page_4" render={() => <ContentComponent contentName="Page 4" numberOfParagraphs={4} />} />
+          <Route path="/page_5" render={() => <ContentComponent contentName="Page 5" numberOfParagraphs={5} />} />
+          <Route path="/page_6" render={() => <ContentComponent contentName="Page 6" numberOfParagraphs={6} />} />
+          <Route path="/page_7" render={() => <ContentComponent contentName="Page 7" numberOfParagraphs={7} />} />
+        </Switch>
+      </ApplicationNavigation>
     );
   }
 }
 
-ApplicationLayoutTest.propTypes = {
-  intl: intlShape,
+ApplicationNavigationTest.propTypes = {
+  disclosureManager: DisclosureManager.disclosureManagerShape,
+  history: PropTypes.object,
+  hideLogout: PropTypes.bool,
+  hideSettings: PropTypes.bool,
+  hideHelp: PropTypes.bool,
+  hideNavigationItems: PropTypes.bool,
+  hideUser: PropTypes.bool,
+  hideHero: PropTypes.bool,
 };
 
-const WrappedApplication = injectIntl(ApplicationLayoutTest);
+const WrappedApplicationNavigationTest = DisclosureManager.withDisclosureManager(withRouter((ApplicationNavigationTest)));
 
-const AppRouter = () => (
-  <WrappedApplication />
+export default () => (
+  <MemoryRouter>
+    <Application>
+      <WrappedApplicationNavigationTest />
+    </Application>
+  </MemoryRouter>
 );
-
-export default AppRouter;
